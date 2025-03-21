@@ -1,5 +1,5 @@
 /**
- *@NApiVersion 2.1
+ *@NApiVersion 2.x
  */
 define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, log, record, search, file) {
     
@@ -18,12 +18,14 @@ define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, 
                 });
             }
 
+            let data = options.preMapData;
             let responseArray = [];
-
-            options.preMapData.forEach(function (workOrder) {
+            
+            for (var i = 0; i < data.length; i++) {
+                var workOrder = data[i];
                 var workOrderNumber = workOrder.WorkOrderNumber;
                 var netsuiteFileId = workOrder.NetSuiteFileId;
-                
+            
                 if (!workOrderNumber || !netsuiteFileId) {
                     log.error({
                         title: 'Skipping entry - Missing WorkOrderNumber or NetSuiteFileId',
@@ -33,21 +35,21 @@ define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, 
                         statusCode: 400,
                         message: 'Missing WorkOrderNumber or NetSuiteFileId'
                     });
-                    return;
+                    continue;
                 }
-
+            
                 var vendorBillId = null;
                 var vendorBillSearch = search.create({
                     type: 'vendorbill',
                     filters: [['custbody_kes_work_order_id', 'is', workOrderNumber]],
                     columns: ['internalid']
                 });
-                
+            
                 var searchResult = vendorBillSearch.run().getRange({ start: 0, end: 1 });
                 if (searchResult.length > 0) {
                     vendorBillId = searchResult[0].getValue('internalid');
                 }
-
+            
                 if (!vendorBillId) {
                     log.error({
                         title: 'Vendor Bill Not Found',
@@ -57,22 +59,22 @@ define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, 
                         statusCode: 404,
                         message: 'Vendor Bill not found for WorkOrderNumber: ' + workOrderNumber
                     });
-                    return;
+                    continue;
                 }
-
+            
                 log.debug({
                     title: 'Processing Work Order',
                     details: 'WorkOrderNumber: ' + workOrderNumber + ', VendorBillId: ' + vendorBillId + ', FileId: ' + netsuiteFileId
                 });
-
+            
                 var vendorBill = record.load({
                     type: record.Type.VENDOR_BILL,
                     id: vendorBillId,
                     isDynamic: true
                 });
-
+            
                 var fileObj = file.load({ id: netsuiteFileId });
-
+            
                 record.attach({
                     record: {
                         type: 'file',
@@ -83,14 +85,14 @@ define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, 
                         id: vendorBillId
                     }
                 });
-
+            
                 vendorBill.save();
-
+            
                 log.debug({
                     title: 'Success',
                     details: 'File ' + netsuiteFileId + ' attached to Vendor Bill ' + vendorBillId
                 });
-
+            
                 responseArray.push({
                     statusCode: 200,
                     message: 'File attached successfully',
@@ -98,7 +100,8 @@ define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, 
                     vendorBillId: vendorBillId,
                     fileAttached: netsuiteFileId
                 });
-            });
+            }
+            
 
             return responseArray; 
 
