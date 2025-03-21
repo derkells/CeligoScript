@@ -1,5 +1,5 @@
 /**
- *@NApiVersion 2.x1
+ *@NApiVersion 2.1
  */
 define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, log, record, search, file) {
     
