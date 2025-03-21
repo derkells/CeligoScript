@@ -1,3 +1,6 @@
+/**
+ *@NApiVersion 2.x1
+ */
 define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, log, record, search, file) {
     
     function postSubmit(options) {
