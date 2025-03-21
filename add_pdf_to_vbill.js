@@ -18,8 +18,8 @@ define(['N/error', 'N/log', 'N/record', 'N/search', 'N/file'], function (error, 
                 });
             }
 
-            let data = options.preMapData;
-            let responseArray = [];
+            var data = options.preMapData;
+            var responseArray = [];
             
             for (var i = 0; i < data.length; i++) {
                 var workOrder = data[i];
